@@ -1,0 +1,63 @@
+name: CI Pipeline - Backend & Frontend
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  backend-ci:
+    name: .NET Backend Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8.0
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+          
+      
+      - name: Enforce Code Formatting
+        run: dotnet format --verify-no-changes
+        continue-on-error: false #cambiar a false cuando exite el project .net
+
+      - name: Restore Dependencies
+        run: dotnet restore
+        continue-on-error: true
+
+      - name: Build Application
+        run: dotnet build --no-restore --configuration Release
+        continue-on-error: true
+
+      - name: Run Unit Tests
+        run: dotnet test --no-build --verbosity normal
+        continue-on-error: true
+
+  frontend-ci:
+    name: Angular Frontend Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          # cache-dependency-path: 'frontend/package-lock.json' # Descomentar cuando exista la carpeta Angular
+
+      # - name: Install Dependencies
+      #   run: npm ci
+      #   working-directory: ./frontend
+
+      # - name: Run ESLint
+      #   run: npm run lint
+      #   working-directory: ./frontend
+
+      # - name: Build Angular (Production Strict)
+      #   run: npm run build -- --configuration production
+      #   working-directory: ./frontend
